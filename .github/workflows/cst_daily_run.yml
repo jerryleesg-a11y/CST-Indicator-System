@@ -2,8 +2,10 @@ name: Daily CST Indicator & Valuation Run
 
 on:
   schedule:
-    # Runs daily at 22:00 UTC (6:00 AM SGT next day)
-    - cron: '0 22 * * *'
+    # 15:30 UTC = 10:30 AM EST (1st hour post-open)
+    # 22:00 UTC = 5:00 PM EST (Post-market close)
+    - cron: '30 15 * * 1-5'
+    - cron: '0 22 * * 1-5'
   workflow_dispatch:
 
 env:
@@ -35,5 +37,5 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
           git add CST_Portfolio_Analysis_Results.csv CST_Indicator_Legend_Guide.csv
-          git diff-index --quiet HEAD || git commit -m "Auto-update CST Analysis Results [$(date -u +'%Y-%m-%d')]"
+          git diff-index --quiet HEAD || git commit -m "Auto-update CST Analysis Results [$(date -u +'%Y-%m-%d %H:%M UTC')]"
           git push
