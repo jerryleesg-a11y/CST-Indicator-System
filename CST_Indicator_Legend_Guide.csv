@@ -1,0 +1,10 @@
+Indicator / Metric,Good Threshold (🟢),Caution Threshold (🔴),Definition & Usage
+P/IV Ratio,< 1.0 (Undervalued),> 1.0 (Overvalued),Price to Intrinsic Value ratio. Values >1.0 indicate trading at a premium over your target valuation.
+200 SMA,Price > 200 SMA (Bullish),Price < 200 SMA (Bearish),200-day Simple Moving Average. Baseline macro trend filter.
+EMA20 / EMA50,Price > EMA20 > EMA50,Price < EMA20 / EMA50,Exponential Moving Averages for short (20D) and medium (50D) swing trend tracking.
+RSI (14),35 - 55 (Healthy Dip),> 70 (Overbought 🔥) / < 30 (Oversold 🧊),Relative Strength Index measuring momentum strength and extreme overextension.
+Dist EMA20 (ATR),-0.5x to +1.5x ATR,> 2.0x ATR (Stretched ⚡),Distance above/below EMA20 expressed in ATR multiples. Highlights overextension.
+Vol Ratio,> 1.2x Volume,< 0.8x Volume,Ratio of current daily volume to 20-day average volume.
+20D Support / Resistance,Support = 20-Day Low,Resistance = 20-Day High,Key price boundaries over the past 20 trading sessions.
+CST Signal: TRIM SATELLITE,Lock in profits,N/A,Sell a portion of satellite position when overextended/overvalued while holding core.
+CST Signal: RE-BUY DIP,Re-acquire at support,N/A,Buy back trimmed satellite shares at 20D support or EMA50 pullback.
