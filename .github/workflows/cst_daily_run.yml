@@ -39,8 +39,8 @@ jobs:
           git add CST_Portfolio_Analysis_Results.csv CST_Indicator_Legend_Guide.csv
           git diff-index --quiet HEAD || git commit -m "Auto-update CST Analysis Results [$(date -u +'%Y-%m-%d %H:%M UTC')]"
           git push
-          
-- name: Send Email Notification
+
+      - name: Send Email Notification
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -48,9 +48,9 @@ jobs:
           secure: true
           username: jerryleesg@gmail.com
           password: ${{ secrets.GMAIL_PASSWORD }}
-          subject: 🚀 CST Portfolio Dashboard Updated
+          subject: "🚀 CST Portfolio Dashboard Updated"
           to: jerryleesg@gmail.com
-          from: GitHub Action Bot
+          from: "GitHub Action Bot"
           body: |
             Your Covered-Swing-Trade (CST) analysis has successfully executed and sorted your holdings!
             
