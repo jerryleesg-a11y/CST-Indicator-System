@@ -42,22 +42,30 @@ def load_portfolio(filepath):
   return tickers, intrinsic_values
 
 
-def fetch_market_data(tickers):
-  print(f"Fetching market data for {len(tickers)} tickers from Yahoo Finance...")
-  data = yf.download(
-      tickers, period="1y", interval="1d", group_by="ticker", auto_adjust=True
-  )
-  return data
+def fetch_ticker_data(ticker):
+  try:
+    df = yf.download(
+        ticker, period="1y", interval="1d", auto_adjust=True, progress=False
+    )
+    if isinstance(df.columns, pd.MultiIndex):
+      df.columns = df.columns.get_level_values(0)
+    return df
+  except Exception as e:
+    print(f"Error downloading {ticker}: {e}")
+    return pd.DataFrame()
 
 
 def calculate_indicators(ticker, df_ticker, iv):
-  if df_ticker.empty or len(df_ticker) < 50:
+  if df_ticker.empty or len(df_ticker) < 30:
     return None
 
-  close = df_ticker["Close"]
-  high = df_ticker["High"]
-  low = df_ticker["Low"]
-  volume = df_ticker["Volume"]
+  close = df_ticker["Close"].dropna()
+  high = df_ticker["High"].dropna()
+  low = df_ticker["Low"].dropna()
+  volume = df_ticker["Volume"].dropna()
+
+  if len(close) < 30:
+    return None
 
   current_price = float(close.iloc[-1])
 
@@ -102,7 +110,7 @@ def calculate_indicators(ticker, df_ticker, iv):
   vol_ma20 = volume.rolling(window=20).mean().iloc[-1]
   vol_ratio = (
       float(volume.iloc[-1] / vol_ma20)
-      if vol_ma20 and vol_ma20 > 0
+      if vol_ma20 and not np.isnan(vol_ma20) and vol_ma20 > 0
       else 1.0
   )
 
@@ -116,19 +124,19 @@ def calculate_indicators(ticker, df_ticker, iv):
 
   # Action Signal Logic
   if p_iv_ratio > 1.25 or rsi > 75:
-    signal = "?? STRONG SELL/TRIM"
+    signal = "🔴 STRONG SELL/TRIM"
     priority = 1
   elif p_iv_ratio > 1.10 or (rsi > 65 and current_price > resistance_20d * 0.98):
-    signal = "?? TRIM SATELLITE"
+    signal = "🟡 TRIM SATELLITE"
     priority = 2
   elif p_iv_ratio < 0.80 and rsi < 40:
-    signal = "?? STRONG BUY"
+    signal = "🚀 STRONG BUY"
     priority = 4
   elif p_iv_ratio < 0.90 or current_price <= support_20d * 1.02:
-    signal = "? RE-BUY DIP"
+    signal = "⚡ RE-BUY DIP"
     priority = 3
   else:
-    signal = "? NEUTRAL"
+    signal = "⚪ NEUTRAL"
     priority = 5
 
   target_trim = round(iv * 1.20, 2)
@@ -170,21 +178,17 @@ def main():
     print("No tickers found to process.")
     return
 
-  raw_data = fetch_market_data(tickers)
   results = []
+  print(
+      f"Fetching and calculating market data for {len(tickers)} tickers..."
+  )
 
   for ticker in tickers:
-    try:
-      if len(tickers) == 1:
-        df_ticker = raw_data
-      else:
-        df_ticker = raw_data[ticker]
-
+    df_ticker = fetch_ticker_data(ticker)
+    if not df_ticker.empty:
       res = calculate_indicators(ticker, df_ticker, intrinsic_values[ticker])
       if res:
         results.append(res)
-    except Exception as e:
-      print(f"Error processing {ticker}: {e}")
 
   if results:
     df_results = pd.DataFrame(results)
@@ -204,6 +208,8 @@ def main():
         f"Analysis complete successfully at {sgt_time}. Results saved to"
         f" {OUTPUT_FILE}"
     )
+  else:
+    print("Error: No results generated.")
 
 
 if __name__ == "__main__":
